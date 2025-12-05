@@ -1,0 +1,77 @@
+## **mini_amano.py**
+
+
+import random
+import numpy as np
+
+# ---------------------------
+# 語彙プール（10語）
+# ---------------------------
+VOCAB = [
+    "構造", "位相", "ズレ", "方向性", "象徴",
+    "抽象度", "境界", "ゆらぎ", "射程", "階層"
+]
+
+# 単語→ID化
+word_to_id = {w: i for i, w in enumerate(VOCAB)}
+id_to_word = {i: w for i, w in enumerate(VOCAB)}
+
+
+# ---------------------------
+# 語彙同士の「意味距離」：ランダム行列（後で学習可能）
+# ---------------------------
+np.random.seed(42)
+embedding = np.random.randn(len(VOCAB), 8)  # ベクトル次元8
+
+
+# ---------------------------
+# step1: 語彙から文章を自動生成
+# ---------------------------
+def generate_sentence(length=5):
+    words = random.sample(VOCAB, length)
+    return words
+
+
+# ---------------------------
+# step2: 文章 → ベクトル（平均埋め込み）
+# ---------------------------
+def sentence_to_vector(words):
+    vecs = [embedding[word_to_id[w]] for w in words]
+    return np.mean(vecs, axis=0)
+
+
+# ---------------------------
+# step3: ベクトル → 最も近い語彙で文章再構成
+# ---------------------------
+def vector_to_sentence(vec, length=5):
+    sims = []
+    for i, e in enumerate(embedding):
+        sim = np.dot(vec, e) / (np.linalg.norm(vec) * np.linalg.norm(e))
+        sims.append((sim, i))
+    sims.sort(reverse=True)
+    top_ids = [i for _, i in sims[:length]]
+    return [id_to_word[i] for i in top_ids]
+
+
+# ---------------------------
+# step4: Self-Poly（自己多相）ループ
+# ---------------------------
+def self_poly(iterations=3, length=5):
+    sentence = generate_sentence(length)
+    print("起点:", sentence)
+
+    for i in range(iterations):
+        vec = sentence_to_vector(sentence)
+        sentence = vector_to_sentence(vec, length)
+        print(f"第{i+1}多相:", sentence)
+
+    return sentence
+
+
+# ---------------------------
+# 実行
+# ---------------------------
+if __name__ == "__main__":
+    final = self_poly(iterations=3, length=5)
+    print("\n最終生成:", final)
+
