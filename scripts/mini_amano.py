@@ -1,5 +1,12 @@
 import random
 import numpy as np
+import json   # ← 追加しておくと便利
+
+# =======================================
+# ここに JSON をロードする
+# =======================================
+with open("vocab_build_v1_1.json", "r", encoding="utf-8") as f:
+    VOCAB_CLUSTERS = json.load(f)
 
 # =======================================
 #  Layer 0：ビル型語彙クラスタ
